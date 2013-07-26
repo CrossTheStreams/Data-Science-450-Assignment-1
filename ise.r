@@ -6,6 +6,7 @@
 source("lib/packages.r")
 # Building a predictive model of the ISE.
 source("lib/helpers.r")
+source("lib/cross_validation.r")
 
 # The data we're going to model is stock exchange daily changes in the 
 # Istanbul Stock Exchange and other indexes between 1/5/2009 and 2/22/2011
@@ -37,38 +38,37 @@ lag.plot(reg.ise)
 add.stat.kpss.test <- ur.kpss(reg.add.ise) 
 # Extreme autocorrelation!
 plot(add.stat.kpss.test)
+# Very non-stationary!
 lag.plot(reg.add.ise)
 
-
-# Cross validation of model forecasting for stationary ISE data
-ise.cv.list <- cross.validation(reg.ise,k=60,test.size=30)
-plot.cross.validation(ise.cv.list$mae)
-ise.cv.list <- cross.validation(reg.ise,k=20,test.size=30)
-plot.cross.validation(ise.cv.list$mae)
-ise.cv.list <- cross.validation(reg.ise,k=10,test.size=30)
-plot.cross.validation(ise.cv.list$mae)
-ise.cv.list <- cross.validation(reg.ise,k=5,test.size=30)
-plot.cross.validation(ise.cv.list$mae)
-ise.cv.list <- cross.validation(reg.ise,k=4,test.size=30)
-plot.cross.validation(ise.cv.list$mae)
-
+# Cross validation of forecasting models for stationary ISE data...
 
 # Residuals tend to follow normal distribution.
+# At K=60, a winner is not at all clear. There is way too much being used in our predictions!
+cross.validation(reg.ise,k=60,horizon=30)
+
+cross.validation(reg.ise,k=20,horizon=30)
+
+cross.validation(reg.ise,k=10,horizon=30)
+
+cross.validation(reg.ise,k=5,horizon=30)
+
 # However, as K value decreases, models other than Linear Regression greatly increase density at near or at zero residual value.
-slide.forecast.errors(ise.cv.list)
+cross.validation(reg.ise,k=4,horizon=30)
 
-# Cross validation of models forecasting for additive ISE data
-add.ise.cv.list <- cross.validation(reg.add.ise,k=60,test.size=30)
-plot.cross.validation(add.ise.cv.list$mae)
-add.ise.cv.list <- cross.validation(reg.add.ise,k=20,test.size=30)
-plot.cross.validation(add.ise.cv.list$mae)
-add.ise.cv.list <- cross.validation(reg.add.ise,k=10,test.size=30)
-plot.cross.validation(add.ise.cv.list$mae)
-add.ise.cv.list <- cross.validation(reg.add.ise,k=5,test.size=30)
-plot.cross.validation(add.ise.cv.list$mae)
-add.ise.cv.list <- cross.validation(reg.add.ise,k=4,test.size=30)
-plot.cross.validation(add.ise.cv.list$mae)
 
-# Residuals tend to follow normal distributions are higher k values for all models.
+# Cross Validation of forecasting models for additive ISE data...
+cross.validation(add.reg.ise,k=60,horizon=30)
+
+cross.validation(add.reg.ise,k=20,horizon=30)
+
+cross.validation(add.reg.ise,k=10,horizon=30)
+
+cross.validation(add.reg.ise,k=5,horizon=30)
+
+# Residuals tend to follow normal distributions in higher k values for all models.
 # Linear Regression tends to have a fairly normal distribution in residuals, though.
-slide.forecast.errors(add.ise.cv.list)
+cross.validation(add.reg.ise,k=4,horizon=30)
+
+
+

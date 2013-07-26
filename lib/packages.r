@@ -10,6 +10,7 @@ pkgTest <- function(x) {
 pkgTest('urca')
 pkgTest('lubridate')
 pkgTest('TTR')
+pkgTest('outliers')
 # This library is especially apt at irregular time series data (e.g. financial data like this)
 pkgTest('zoo')
 pkgTest('tseries')
