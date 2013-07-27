@@ -11,7 +11,7 @@
 cross.validation <- function(time.series,k,horizon) {
 
   par("ask"=T)
-  cv.list <- cv.iteration(reg.ise,k=60,test.size=30)
+  cv.list <- cv.iteration(reg.ise,k=k,test.size=30)
   plot.cross.validation(cv.list$mae)
   slide.forecast.errors(cv.list) 
   par("ask"=F)
