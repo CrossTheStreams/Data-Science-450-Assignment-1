@@ -69,6 +69,3 @@ cross.validation(add.reg.ise,k=5,horizon=30)
 # Residuals tend to follow normal distributions in higher k values for all models.
 # Linear Regression tends to have a fairly normal distribution in residuals, though.
 cross.validation(add.reg.ise,k=4,horizon=30)
-
-
-

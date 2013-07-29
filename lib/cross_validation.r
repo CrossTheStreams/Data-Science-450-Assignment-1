@@ -11,49 +11,49 @@
 cross.validation <- function(time.series,k,horizon) {
 
   par("ask"=T)
-  cv.list <- cv.iteration(reg.ise,k=k,test.size=30)
+  cv.list <- cv.iteration(time.series,k=k,horizon=horizon)
   plot.cross.validation(cv.list$mae)
   slide.forecast.errors(cv.list) 
   par("ask"=F)
+  return(cv.list)
 
 }
 
 
-cv.iteration <- function(time.series,k,test.size){
+cv.iteration <- function(time.series,k,horizon){
 
   n <- length(time.series)
-  iterations <- as.integer((n-test.size)/k) 
-  mae1 <- mae2 <- mae3 <- mae4 <- matrix(NA,test.size,iterations)
+  iterations <- (n - (k + horizon))
+  mae1 <- mae2 <- mae3 <- mae4 <- matrix(NA,horizon,iterations)
   lm.res <- arima.res <- ets.res <- hw.res <- c()
 
-  for(i in 1:iterations) {
+  for(i in 1:(iterations)) {
 
-    end <- (k * (i))
-    start <- (end - k)
+    start <- i
+    end <- (i + k)
 
     print(paste("Iteration for ",as.character(start),"..",as.character(end)))
 
-
     # ensure regularity 
     xshort <- as.ts(time.series[start:end])
-    xnext <- as.ts(time.series[(end+1):(end+test.size)])
+    xnext <- as.ts(time.series[(end+1):(end+horizon)])
    
     lm.fit <- tslm(xshort ~ trend)
-    lm.fcast <- forecast.lm(lm.fit, h=test.size)
+    lm.fcast <- forecast.lm(lm.fit, h=horizon)
 
     arima.fit <- auto.arima(xshort)
-    arima.fcast <- forecast(arima.fit,h=test.size)
+    arima.fcast <- forecast(arima.fit,h=horizon)
 
     ets.fit <- ets(xshort)
-    ets.fcast <- forecast(ets.fit, h=test.size)
+    ets.fcast <- forecast(ets.fit, h=horizon)
 
     hw.fit <- HoltWinters(xshort,beta=F,gamma=F)
-    hw.fcast <- forecast.HoltWinters(hw.fit, h=test.size)
+    hw.fcast <- forecast.HoltWinters(hw.fit, h=horizon)
 
     lm.res <- c(lm.res,res(lm.fcast[['mean']],xnext))
-    arima.res <- c(arima.res,arima.fcast[['mean']],xnext)
-    ets.res <- c(ets.res,ets.fcast[['mean']],xnext)
-    hw.res <- c(hw.res,hw.fcast[['mean']],xnext)
+    arima.res <- c(arima.res,res(arima.fcast[['mean']],xnext))
+    ets.res <- c(ets.res,res(ets.fcast[['mean']],xnext))
+    hw.res <- c(hw.res,res(hw.fcast[['mean']],xnext))
  
     mae1[,i] <- mae(lm.fcast[['mean']],xnext)
     mae2[,i] <- mae(arima.fcast[['mean']],xnext)
@@ -72,23 +72,23 @@ plot.cross.validation <- function (mae.list,exclude.mae.list.item=c(),y.max=0.05
 
   preserve <- mae.list
   
-  test.size <- nrow(as.data.frame(mae.list[1][1]))
+  horizon <- nrow(as.data.frame(mae.list[1][1]))
 
   if (length(exclude.mae.list.item) > 0) {
     mae.list[exclude.mae.list.item] <- NULL
   }
-  plot(1:test.size, type="l", xlab="horizon", ylab="MAE", ylim=c(0,y.max))
+  plot(1:horizon, type="l", xlab="horizon", ylab="MAE", ylim=c(0,y.max))
   if (typeof(mae.list$lm.mae) != "NULL") {
-    lines(1:test.size, rowMeans(mae.list$lm.mae), type="l",col=2)
+    lines(1:horizon, rowMeans(mae.list$lm.mae), type="l",col=2)
   }
   if (typeof(mae.list$arima.mae) != "NULL") {
-    lines(1:test.size, rowMeans(mae.list$arima.mae), type="l",col=3)
+    lines(1:horizon, rowMeans(mae.list$arima.mae), type="l",col=3)
   }
   if (typeof(mae.list$ets.mae) != "NULL") {
-    lines(1:test.size, rowMeans(mae.list$ets.mae), type="l",col=4)
+    lines(1:horizon, rowMeans(mae.list$ets.mae), type="l",col=4)
   }
   if (typeof(mae.list$hw.mae) != "NULL") {
-    lines(1:test.size, rowMeans(mae.list$hw.mae), type="l",col=5)
+    lines(1:horizon, rowMeans(mae.list$hw.mae), type="l",col=5)
   }
 
   legend("topleft",legend=c("LM","ARIMA","ETS","Holt Winters"),col=2:5,lty=1)
